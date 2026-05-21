@@ -1,0 +1,13 @@
+# DECISIONS.log — SSME Customers
+
+Append-only log of major decisions. One entry per decision, newest last.
+
+---
+
+2026-05-20 | STACK | Chose React+Vite+Supabase+Cloudflare Workers for Module 1. See docs/adr/ADR-001-tech-stack.md.
+
+2026-05-20 | SCHEMA | Renamed customers.id → customers.customer_id in migration 010 for naming consistency across all hub modules. Cross-repo impact on Quotation App documented in docs/adr/ADR-002-customer-id-rename.md.
+
+2026-05-21 | AUDIT | Ran sober audit-001. Score: 7.6/10 (NEAR-READY). 30 defects (0 Critical, 21 High, 8 Medium, 1 Low). Primary gap: input validation on all write paths (STD-05 score 3.3). See .planning/audit-001/AUDIT.md.
+
+2026-05-21 | VALIDATION | Added Zod schemas to all write paths (createCustomer, updateCustomer, createVehicle, uploadDocument, createDocument). File type/size guard added to uploadDocument (PDF/JPEG/PNG, 10 MB max). Part of audit-001 remediation.

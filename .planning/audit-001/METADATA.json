@@ -2,10 +2,10 @@
   "audit_id": "audit-001",
   "project_path": "/Users/teckchuan/HINO SSKB/SSME CUSTOMERS",
   "started_at": "2026-05-21T07:07:45Z",
-  "phase": "audit_complete",
-  "completed_phases": ["audit"],
+  "phase": "complete",
+  "completed_phases": ["audit", "plan", "execute", "evaluate"],
   "score_phase1": 7.6,
-  "score_phase4": null,
+  "score_phase4": 8.1,
   "defect_count": { "total": 30, "critical": 0, "high": 21, "medium": 8, "low": 1 },
   "branch": null
 }
