@@ -19,3 +19,11 @@ Every other hub module reads from this.
 - Auth via Supabase (roles: admin, finance, sales, workshop)
 - GP and financial data: admin + finance only
 - GitHub: SSMEHub org ONLY
+
+## Session Startup Checks (MANDATORY — every session)
+1. **NotebookLM CLI account** — run `notebooklm list` and verify ONLY these notebooks appear:
+   - "SSKB — Commercial Vehicle Quotation &..." (correct account)
+   - If unrelated notebooks appear (iGaming/M63/personal projects) → WRONG ACCOUNT → tell user to run `! notebooklm login` and select soonsengmotorsenterprise@gmail.com (red S logo, "Hi, SSKB!")
+   - NEVER create notebooks or fire research until account is confirmed correct
+2. **Supabase** — confirm project is ssme-hub (gruvcmbsvoauhftfcoio.supabase.co)
+3. **GitHub** — confirm remote is SSMEHub org, never JasonSSKB or GeneralMax618
