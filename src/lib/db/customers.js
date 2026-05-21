@@ -125,3 +125,56 @@ export async function updateCustomer(customerId, updates) {
     throw error
   }
 }
+
+export async function deleteCustomer(customerId) {
+  const { error } = await supabase
+    .from('customers')
+    .delete()
+    .eq('customer_id', customerId)
+
+  if (error) throw error
+}
+
+export async function getCustomerCount({ status = 'active' } = {}) {
+  const { count, error } = await supabase
+    .from('customers')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', status)
+
+  if (error) throw error
+  return count
+}
+
+export async function searchCustomers(term) {
+  const { data, error } = await supabase
+    .from('customers')
+    .select('customer_id, company_name, customer_code, entity_type, phone, status')
+    .or(
+      `company_name.ilike.%${term}%,phone.ilike.%${term}%,customer_code.ilike.%${term}%`
+    )
+    .eq('status', 'active')
+    .limit(8)
+    .order('company_name')
+
+  if (error) throw error
+  return data
+}
+
+export async function getCustomersFiltered({ search = '', status = '', entityType = '' } = {}) {
+  let query = supabase
+    .from('customers')
+    .select('customer_id, company_name, customer_code, entity_type, phone, status')
+    .order('company_name')
+
+  if (search) {
+    query = query.or(
+      `company_name.ilike.%${search}%,phone.ilike.%${search}%,customer_code.ilike.%${search}%`
+    )
+  }
+  if (status) query = query.eq('status', status)
+  if (entityType) query = query.eq('entity_type', entityType)
+
+  const { data, error } = await query
+  if (error) throw error
+  return data
+}
