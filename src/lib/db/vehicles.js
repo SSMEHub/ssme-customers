@@ -143,3 +143,95 @@ export async function getReplacementTargets() {
     throw error
   }
 }
+
+export async function getVehicleById(vehicleId) {
+  const { data, error } = await supabase
+    .from('vehicles')
+    .select(`
+      *,
+      customers ( customer_id, company_name, phone, email )
+    `)
+    .eq('vehicle_id', vehicleId)
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function updateVehicle(vehicleId, updates) {
+  const payload = { ...updates }
+  if (payload.plate_number) payload.plate_number = payload.plate_number.toUpperCase().replace(/\s/g, '')
+  if (payload.chassis_no) payload.chassis_no = payload.chassis_no.toUpperCase()
+  if (payload.engine_no) payload.engine_no = payload.engine_no.toUpperCase()
+
+  const { data, error } = await supabase
+    .from('vehicles')
+    .update(payload)
+    .eq('vehicle_id', vehicleId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function deleteVehicle(vehicleId) {
+  const { error } = await supabase
+    .from('vehicles')
+    .delete()
+    .eq('vehicle_id', vehicleId)
+
+  if (error) throw error
+}
+
+export async function getVehiclesWithNextExpiry({ search = '', status = '', maker = '', replacementOnly = false } = {}) {
+  let query = supabase
+    .from('vehicles')
+    .select(`
+      vehicle_id, plate_number, maker, model_code, body_type,
+      manufacture_yr, reg_date, status,
+      customers ( customer_id, company_name ),
+      vehicle_documents ( doc_type, expiry_date )
+    `)
+    .order('plate_number')
+
+  if (search) {
+    query = query.or(
+      `plate_number.ilike.%${search}%,chassis_no.ilike.%${search}%`
+    )
+  }
+  if (status) query = query.eq('status', status)
+  if (maker) query = query.ilike('maker', `%${maker}%`)
+  if (replacementOnly) {
+    const cutoffYear = new Date().getFullYear() - 7
+    query = query.lte('manufacture_yr', cutoffYear)
+  }
+
+  const { data, error } = await query
+  if (error) throw error
+
+  return data.map((v) => {
+    const futureDocs = (v.vehicle_documents || [])
+      .filter((d) => d.expiry_date)
+      .sort((a, b) => new Date(a.expiry_date) - new Date(b.expiry_date))
+    return {
+      ...v,
+      next_expiry: futureDocs[0]?.expiry_date ?? null,
+    }
+  })
+}
+
+export async function searchVehicles(term) {
+  const { data, error } = await supabase
+    .from('vehicles')
+    .select(`
+      vehicle_id, plate_number, maker, model_code, status,
+      customers ( company_name )
+    `)
+    .or(`plate_number.ilike.%${term}%,chassis_no.ilike.%${term}%`)
+    .limit(8)
+    .order('plate_number')
+
+  if (error) throw error
+  return data
+}
