@@ -27,3 +27,22 @@ Every other hub module reads from this.
    - NEVER create notebooks or fire research until account is confirmed correct
 2. **Supabase** — confirm project is ssme-hub (gruvcmbsvoauhftfcoio.supabase.co)
 3. **GitHub** — confirm remote is SSMEHub org, never JasonSSKB or GeneralMax618
+
+## Domain rules — mandatory variables
+
+| Variable | Allowed values | Reason |
+|---|---|---|
+| `entity_type` | `sdn_bhd`, `enterprise`, `individual`, `cooperative`, `gov_agency`, `other` | SSM entity classification for Malaysian businesses |
+| `id_type` | `ssm`, `ic`, `other` | SSM = company registration; IC = NRIC for individuals |
+| `status` (customer) | `active`, `inactive`, `rejected` | `rejected` = failed credit check; never delete customers |
+| `doc_type` | `geran`, `insurance`, `road_tax`, `puspakom`, `sld`, `permit_apad`, `permit_lpkp`, `report_awalan`, `invoice_sales`, `invoice_service`, `plan`, `other` | JPJ and PUSPAKOM document types for Malaysian commercial vehicles |
+| `role` | `admin`, `finance`, `sales`, `workshop` | RLS enforced at DB level; do not add roles without a migration |
+| `gvw_class` | `light`, `medium`, `heavy` | HINO commercial vehicle GVW classification |
+
+## Domain rules — forbidden patterns
+
+- **Never SELECT \* from vehicles without a WHERE clause** — fleet table will grow to thousands of rows
+- **Never hardcode role strings** — use enum values above; a typo silently fails RLS
+- **Never commit to the Quotation App repo from this session** — separate GitHub accounts
+- **Never expose `customer_id` in URL params without auth check** — UUIDs but still sensitive
+- **Migration 010 renamed `customers.id` → `customers.customer_id`** — Quotation App must be updated before running migration 010 on shared production DB (see docs/adr/ADR-002)
