@@ -8,7 +8,7 @@ export const customerSchema = z.object({
   ),
   customer_code: z.string().max(50).optional().or(z.literal('')),
   id_number: z.string().max(100).optional().or(z.literal('')),
-  id_type: z.enum(['SSM', 'IC', 'Other']).optional().or(z.literal('')),
+  id_type: z.enum(['ssm', 'ic', 'other']).optional().or(z.literal('')),
   phone: z.string().max(20).optional().or(z.literal('')),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   contact_person: z.string().max(100).optional().or(z.literal('')),

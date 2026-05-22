@@ -124,9 +124,9 @@ export default function CustomerForm() {
             <Field label="ID Type" error={errors.id_type?.message}>
               <select {...register('id_type')} className={selectCls}>
                 <option value="">Select…</option>
-                <option value="SSM">SSM</option>
-                <option value="IC">IC</option>
-                <option value="Other">Other</option>
+                <option value="ssm">SSM</option>
+                <option value="ic">IC</option>
+                <option value="other">Other</option>
               </select>
             </Field>
             <div />
