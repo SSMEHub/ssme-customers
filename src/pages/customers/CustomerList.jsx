@@ -15,7 +15,14 @@ function useDebounce(value, delay) {
   return debounced
 }
 
-const ENTITY_TYPES = ['Sdn Bhd', 'Enterprise', 'Individual', 'Cooperative', 'Gov Agency', 'Other']
+const ENTITY_TYPES = [
+  { value: 'sdn_bhd', label: 'Sdn Bhd' },
+  { value: 'enterprise', label: 'Enterprise' },
+  { value: 'individual', label: 'Individual' },
+  { value: 'cooperative', label: 'Cooperative' },
+  { value: 'gov_agency', label: 'Gov Agency' },
+  { value: 'other', label: 'Other' },
+]
 
 export default function CustomerList() {
   const navigate = useNavigate()
@@ -70,7 +77,7 @@ export default function CustomerList() {
         >
           <option value="">All Entity Types</option>
           {ENTITY_TYPES.map((t) => (
-            <option key={t} value={t}>{t}</option>
+            <option key={t.value} value={t.value}>{t.label}</option>
           ))}
         </select>
         {(search || status || entityType) && (
