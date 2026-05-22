@@ -8,7 +8,7 @@ const DOC_TYPE_LABELS = {
   insurance: 'Insurance',
   road_tax: 'Road Tax (LKM)',
   puspakom: 'Puspakom',
-  sld_cert: 'SLD Cert',
+  sld: 'SLD Cert',
   permit_apad: 'Permit APAD',
   permit_lpkp: 'Permit LPKP',
   geran: 'Geran',
