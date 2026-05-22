@@ -1,4 +1,4 @@
 name = "ssme-customers"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
-assets = { directory = "./dist", binding = "ASSETS" }
+assets = { directory = "./dist" }
