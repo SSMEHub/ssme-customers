@@ -55,18 +55,24 @@ export async function uploadDocument(vehicleId, file, docMeta) {
 
   if (uploadError) throw uploadError
 
-  const { data, error } = await supabase
-    .from('vehicle_documents')
-    .insert({
-      vehicle_id: vehicleId,
-      file_url: filePath,
-      file_name: file.name,
-      file_size_bytes: file.size,
-      ...docMeta,
-    })
-    .select()
-    .single()
+  try {
+    const { data, error } = await supabase
+      .from('vehicle_documents')
+      .insert({
+        vehicle_id: vehicleId,
+        file_url: filePath,
+        file_name: file.name,
+        file_size_bytes: file.size,
+        ...docMeta,
+      })
+      .select()
+      .single()
 
-  if (error) throw error
-  return data
+    if (error) throw error
+    return data
+  } catch (insertError) {
+    // Rollback: remove orphaned storage file when DB insert fails
+    await supabase.storage.from('vehicle-documents').remove([filePath])
+    throw insertError
+  }
 }
