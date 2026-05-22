@@ -2,27 +2,30 @@
 Updated: 2026-05-23
 
 ## Where we are
-All 16 UI build tasks are committed and merged. Module 1 has its full data-vault UI: dashboard with expiry alerts, customer CRUD, vehicle CRUD with document cabinet, and Excel import pipeline. Sober audit scored 8.1/10 but no re-audit since the 16 UI commits landed.
+Module 1 UI merged to main and deployed to Cloudflare Workers at `ssme-customers.soonsengmotorsenterprise.workers.dev`. 2,504 customers imported from SQL Account Excel. Login page added (`jason@ssmehub.com` / `Ssme2025!`). All 16 UI tasks done, 5 critical bugs fixed, 5 priority fixes closed.
 
 ## Do first
-Close the 5 priority fixes — plan is at `docs/superpowers/plans/2026-05-23-priority-fixes.md` (stale session doc, uncommitted migration, Storage atomicity, untracked mockup, gitignore).
+1. **Vehicles data** — 2,504 customer accounts exist but ZERO vehicles. Jason has vehicle data (separate Excel). Each customer account can have multiple fleets — duplicate-looking company names are separate SQL Accounts, NOT duplicates.
+2. **1000-record limit** — `src/lib/db/customers.js:177` (`getCustomersFiltered`) has no `.limit()` so Supabase defaults to 1000. Only 1000 of 2504 visible. Fix: add `.limit(5000)`.
+3. **Push to GitHub** — 30 commits on main ahead of origin, not pushed.
 
 ## Pending / blocked
 | Item | Status | Notes |
 |---|---|---|
-| Priority fixes (5 tasks) | Not started | Plan exists at `docs/superpowers/plans/2026-05-23-priority-fixes.md` |
-| Migration 011 | Written, uncommitted | `supabase/migrations/011_contacts_credithold_hardcopy.sql` — commit or review before any DB work |
-| `uploadDocument` atomicity gap | Medium | `src/lib/db/documents.js` uploads to Storage before DB insert, no rollback on failure |
-| Mockup directory | Untracked | `mockup/index.html` (7312-line rebuilt mockup) — needs commit as reference material |
-| `supabase/.temp/` | Untracked temp | Supabase CLI context artifact — needs `.gitignore` entry |
-| Migration 010 blocked | Blocked (external) | Quotation App still references old `customers.id`. Hard blocker before migration 010 on shared prod DB. See `docs/adr/ADR-002` |
-| Quotation App `customer_id` find-replace | Blocked (external) | Contact Jason. Quotation App repo must replace all `customers.id` references with `customers.customer_id` before running migration 010 on shared prod. See docs/adr/ADR-002. No action possible from this repo. |
-| Sober re-audit | Pending | Score 8.1/10 from audit-001; no follow-up since 16 UI commits landed |
-| Full-diff code review | Pending | No codex review run post-UI-build — pre-merge gate |
-| Plan checkbox sync | Housekeeping | `docs/superpowers/plans/2026-05-20-module1-ui.md` checkboxes still unchecked |
+| Push to GitHub | Not pushed | 30 commits on main |
+| Vehicles import | Blocked | Need vehicle data file from Jason |
+| 1000-record limit | Not started | `src/lib/db/customers.js:177` needs `.limit(5000)` |
+| Dashboard stats showing — | Investigate | Expiry alerts, fleet age show dash/loading — likely no vehicle data |
+| Sober audit 5.8/10 | Pending | Down from 8.1. STD-04 types, STD-10 PBT, STD-12 CI are biggest gaps |
+| Code review high findings | Pending | 4 high in `docs/audit/REVIEW-002.md` |
+| Migration 010 Quotation App | Blocked (external) | ADR-002 |
 
-## Launcher (set up 2026-05-23)
+## Key info
+- **Deployed:** `https://ssme-customers.soonsengmotorsenterprise.workers.dev`
+- **Supabase:** `gruvcmbsvoauhftfcoio.supabase.co` (ssme-hub)
+- **Login:** `jason@ssmehub.com` / `Ssme2025!` (role=admin in app_metadata)
+- **Customer Excel:** `/Users/teckchuan/Downloads/Cust Customer Listing 1.xlsx` (already imported)
+
+## Launcher
 - Double-click `~/Desktop/Claude.command`
-- Pick model (Sonnet 4.6 / Opus 4.7 / DeepSeek V4 Pro) → pick project → `/start`
-- DeepSeek key in `~/.deepseek-env-trucks`
-- All models run at max effort
+- Pick model → pick project → `/start`
