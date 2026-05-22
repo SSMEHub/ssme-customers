@@ -87,8 +87,15 @@ export default function CustomerForm() {
             <Field label="Entity Type" required error={errors.entity_type?.message}>
               <select {...register('entity_type')} className={selectCls}>
                 <option value="">Select…</option>
-                {['Sdn Bhd','Enterprise','Individual','Cooperative','Gov Agency','Other'].map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                {[
+                  { value: 'sdn_bhd', label: 'Sdn Bhd' },
+                  { value: 'enterprise', label: 'Enterprise' },
+                  { value: 'individual', label: 'Individual' },
+                  { value: 'cooperative', label: 'Cooperative' },
+                  { value: 'gov_agency', label: 'Gov Agency' },
+                  { value: 'other', label: 'Other' },
+                ].map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
             </Field>

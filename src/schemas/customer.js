@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const customerSchema = z.object({
   company_name: z.string().min(1, 'Company name is required'),
   entity_type: z.enum(
-    ['Sdn Bhd', 'Enterprise', 'Individual', 'Cooperative', 'Gov Agency', 'Other'],
+    ['sdn_bhd', 'enterprise', 'individual', 'cooperative', 'gov_agency', 'other'],
     { required_error: 'Entity type is required' }
   ),
   customer_code: z.string().max(50).optional().or(z.literal('')),
