@@ -16,6 +16,7 @@ Close the 5 priority fixes — plan is at `docs/superpowers/plans/2026-05-23-pri
 | Mockup directory | Untracked | `mockup/index.html` (7312-line rebuilt mockup) — needs commit as reference material |
 | `supabase/.temp/` | Untracked temp | Supabase CLI context artifact — needs `.gitignore` entry |
 | Migration 010 blocked | Blocked (external) | Quotation App still references old `customers.id`. Hard blocker before migration 010 on shared prod DB. See `docs/adr/ADR-002` |
+| Quotation App `customer_id` find-replace | Blocked (external) | Contact Jason. Quotation App repo must replace all `customers.id` references with `customers.customer_id` before running migration 010 on shared prod. See docs/adr/ADR-002. No action possible from this repo. |
 | Sober re-audit | Pending | Score 8.1/10 from audit-001; no follow-up since 16 UI commits landed |
 | Full-diff code review | Pending | No codex review run post-UI-build — pre-merge gate |
 | Plan checkbox sync | Housekeeping | `docs/superpowers/plans/2026-05-20-module1-ui.md` checkboxes still unchecked |
