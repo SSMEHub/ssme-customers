@@ -1,14 +1,12 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    // Try to serve static asset first
-    try {
-      return await env.ASSETS.fetch(request);
-    } catch (e) {
-      // Fall through to SPA fallback
+    // Try serving the requested path as a static asset
+    let response = await env.ASSETS.fetch(request);
+    // If the asset doesn't exist (404), serve index.html for SPA routing
+    if (response.status === 404) {
+      response = await env.ASSETS.fetch(new URL('/index.html', url.origin).toString());
     }
-    // SPA fallback — serve index.html for all non-asset routes
-    const response = await env.ASSETS.fetch(new Request(new URL('/index.html', url.origin), request));
     return response;
   }
 }
