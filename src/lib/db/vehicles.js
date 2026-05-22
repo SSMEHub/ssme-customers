@@ -13,7 +13,7 @@ const VehicleInsertSchema = z.object({
   chassis_no: z.string().optional(),
   engine_no: z.string().optional(),
   gvw_kg: z.number().positive().optional(),
-  status: z.enum(['active', 'sold', 'scrapped']).optional(),
+  status: z.enum(['active', 'in_shop', 'decommissioned', 'scrapped']).optional(),
 })
 
 /**
