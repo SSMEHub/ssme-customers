@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { uploadDocument as storageUpload, getSignedUrl } from '../../lib/storage'
-import { upsertDocument } from '../../lib/db/documents'
+import { getSignedUrl } from '../../lib/storage'
+import { uploadDocument } from '../../lib/db/documents'
 import StatusBadge from '../../components/ui/StatusBadge.jsx'
 
 const DOC_TYPES = [
@@ -9,7 +9,7 @@ const DOC_TYPES = [
   { key: 'insurance', label: 'Insurance', hasExpiry: true },
   { key: 'road_tax', label: 'Road Tax (LKM)', hasExpiry: true },
   { key: 'puspakom', label: 'Puspakom', hasExpiry: true },
-  { key: 'sld_cert', label: 'SLD Cert', hasExpiry: true },
+  { key: 'sld', label: 'SLD Cert', hasExpiry: true },
   { key: 'permit_apad', label: 'Permit APAD', hasExpiry: true },
   { key: 'permit_lpkp', label: 'Permit LPKP', hasExpiry: true },
   { key: 'report_awalan', label: 'Report Awalan', hasExpiry: false },
@@ -68,12 +68,8 @@ function DocCard({ docType, current, history, vehicleId, onRefresh }) {
     setUploading(true)
     setUploadError('')
     try {
-      const path = await storageUpload(vehicleId, docType.key, file)
-      await upsertDocument(vehicleId, {
+      await uploadDocument(vehicleId, file, {
         doc_type: docType.key,
-        file_url: path,
-        file_name: file.name,
-        file_size_bytes: file.size,
         doc_number: meta.doc_number || null,
         issue_date: meta.issue_date || null,
         expiry_date: meta.expiry_date || null,
