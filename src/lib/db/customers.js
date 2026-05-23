@@ -33,6 +33,7 @@ export async function getCustomers({ search = '', status = 'active' } = {}) {
       .select('*')
       .eq('status', status)
       .order('company_name')
+      .limit(5000)
 
     if (search) {
       query = query.ilike('company_name', `%${search}%`)
@@ -161,20 +162,26 @@ export async function searchCustomers(term) {
 }
 
 export async function getCustomersFiltered({ search = '', status = '', entityType = '' } = {}) {
-  let query = supabase
-    .from('customers')
-    .select('customer_id, company_name, customer_code, entity_type, phone, status')
-    .order('company_name')
+  try {
+    let query = supabase
+      .from('customers')
+      .select('customer_id, company_name, customer_code, entity_type, phone, status')
+      .order('company_name')
+      .limit(5000)
 
-  if (search) {
-    query = query.or(
-      `company_name.ilike.%${search}%,phone.ilike.%${search}%,customer_code.ilike.%${search}%`
-    )
+    if (search) {
+      query = query.or(
+        `company_name.ilike.%${search}%,phone.ilike.%${search}%,customer_code.ilike.%${search}%`
+      )
+    }
+    if (status) query = query.eq('status', status)
+    if (entityType) query = query.eq('entity_type', entityType)
+
+    const { data, error } = await query
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error(JSON.stringify({ operation: 'getCustomersFiltered', params: { search, status, entityType }, message: error.message, code: error.code, ts: new Date().toISOString() }))
+    throw error
   }
-  if (status) query = query.eq('status', status)
-  if (entityType) query = query.eq('entity_type', entityType)
-
-  const { data, error } = await query
-  if (error) throw error
-  return data
 }

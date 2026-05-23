@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import AppShell from './components/layout/AppShell.jsx'
 import Login from './pages/Login.jsx'
@@ -11,6 +11,25 @@ import VehicleList from './pages/vehicles/VehicleList.jsx'
 import VehicleDetail from './pages/vehicles/VehicleDetail.jsx'
 import VehicleForm from './pages/vehicles/VehicleForm.jsx'
 import ImportPage from './pages/import/ImportPage.jsx'
+
+function LoginRedirect() {
+  const location = useLocation()
+  if (location.pathname === '/login') return null
+  const returnTo = encodeURIComponent(location.pathname + location.search)
+  return <Navigate to={`/login?returnTo=${returnTo}`} replace />
+}
+
+function ReturnToRedirect() {
+  const [searchParams] = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
+  if (returnTo) {
+    const decoded = decodeURIComponent(returnTo)
+    if (decoded !== '/login') {
+      return <Navigate to={decoded} replace />
+    }
+  }
+  return null
+}
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -32,26 +51,29 @@ export default function App() {
     return (
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<LoginRedirect />} />
       </Routes>
     )
   }
 
   return (
-    <Routes>
-      <Route element={<AppShell />}>
-        <Route index element={<Dashboard />} />
-        <Route path="customers" element={<CustomerList />} />
-        <Route path="customers/new" element={<CustomerForm />} />
-        <Route path="customers/:id" element={<CustomerDetail />} />
-        <Route path="customers/:id/edit" element={<CustomerForm />} />
-        <Route path="vehicles" element={<VehicleList />} />
-        <Route path="vehicles/new" element={<VehicleForm />} />
-        <Route path="vehicles/:id" element={<VehicleDetail />} />
-        <Route path="vehicles/:id/edit" element={<VehicleForm />} />
-        <Route path="import" element={<ImportPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+    <>
+      <ReturnToRedirect />
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<Dashboard />} />
+          <Route path="customers" element={<CustomerList />} />
+          <Route path="customers/new" element={<CustomerForm />} />
+          <Route path="customers/:id" element={<CustomerDetail />} />
+          <Route path="customers/:id/edit" element={<CustomerForm />} />
+          <Route path="vehicles" element={<VehicleList />} />
+          <Route path="vehicles/new" element={<VehicleForm />} />
+          <Route path="vehicles/:id" element={<VehicleDetail />} />
+          <Route path="vehicles/:id/edit" element={<VehicleForm />} />
+          <Route path="import" element={<ImportPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </>
   )
 }

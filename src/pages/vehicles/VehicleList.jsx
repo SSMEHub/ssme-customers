@@ -5,6 +5,7 @@ import { getVehiclesWithNextExpiry } from '../../lib/db/vehicles'
 import StatusBadge from '../../components/ui/StatusBadge.jsx'
 import EmptyState from '../../components/ui/EmptyState.jsx'
 import PageHeader from '../../components/ui/PageHeader.jsx'
+import ErrorBanner from '../../components/ui/ErrorBanner.jsx'
 
 function useDebounce(value, delay) {
   const [debounced, setDebounced] = useState(value)
@@ -35,7 +36,7 @@ export default function VehicleList() {
   )
   const debouncedSearch = useDebounce(search, 300)
 
-  const { data: vehicles = [], isLoading } = useQuery({
+  const { data: vehicles = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ['vehicles', debouncedSearch, status, maker, replacementOnly],
     queryFn: () =>
       getVehiclesWithNextExpiry({
@@ -111,6 +112,10 @@ export default function VehicleList() {
           </button>
         )}
       </div>
+
+      {isError && (
+        <ErrorBanner message={error.message} onRetry={() => refetch()} />
+      )}
 
       {isLoading ? (
         <p className="text-sm text-gray-400 py-4">Loading…</p>

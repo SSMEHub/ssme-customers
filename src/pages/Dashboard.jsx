@@ -148,9 +148,18 @@ export default function Dashboard() {
       )}
 
       {!alertsLoading && !hasAlerts && (
-        <div className="bg-white border border-[#e0e2e6] rounded-lg">
-          <EmptyState message="All documents are up to date" icon="✓" />
-        </div>
+        stats?.activeVehicles === 0 ? (
+          <div className="bg-white border border-[#e0e2e6] rounded-lg p-8 text-center">
+            <p className="text-sm text-gray-500 mb-3">No vehicles in database yet</p>
+            <Link to="/import" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+              Import fleet data →
+            </Link>
+          </div>
+        ) : (
+          <div className="bg-white border border-[#e0e2e6] rounded-lg">
+            <EmptyState message="All documents are up to date" icon="✓" />
+          </div>
+        )
       )}
 
       {!alertsLoading && hasAlerts && (

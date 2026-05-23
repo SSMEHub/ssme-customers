@@ -17,7 +17,7 @@ export async function getFleetAgeStats() {
     .eq('replacement_due', true)
 
   if (error) throw error
-  return { replacementCount: data.length, vehicles: data }
+  return { replacementCount: data?.length ?? 0, vehicles: data ?? [] }
 }
 
 export async function getQuickStats() {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getCustomersFiltered } from '../../lib/db/customers'
@@ -6,12 +6,22 @@ import StatusBadge from '../../components/ui/StatusBadge.jsx'
 import EmptyState from '../../components/ui/EmptyState.jsx'
 import PageHeader from '../../components/ui/PageHeader.jsx'
 
-function useDebounce(value, delay) {
+function useDebounce(value, delay, flushKey) {
   const [debounced, setDebounced] = useState(value)
+
   useEffect(() => {
     const t = setTimeout(() => setDebounced(value), delay)
     return () => clearTimeout(t)
   }, [value, delay])
+
+  const prevFlushKey = useRef(0)
+  useEffect(() => {
+    if (flushKey !== prevFlushKey.current) {
+      prevFlushKey.current = flushKey
+      setDebounced(value)
+    }
+  }, [flushKey, value])
+
   return debounced
 }
 
@@ -29,9 +39,10 @@ export default function CustomerList() {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
   const [entityType, setEntityType] = useState('')
-  const debouncedSearch = useDebounce(search, 300)
+  const [flushKey, setFlushKey] = useState(0)
+  const debouncedSearch = useDebounce(search, 300, flushKey)
 
-  const { data: customers = [], isLoading } = useQuery({
+  const { data: customers = [], isLoading, isError, error, isFetching, refetch } = useQuery({
     queryKey: ['customers', debouncedSearch, status, entityType],
     queryFn: () => getCustomersFiltered({ search: debouncedSearch, status, entityType }),
     staleTime: 5 * 60 * 1000,
@@ -57,6 +68,7 @@ export default function CustomerList() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') setFlushKey(k => k + 1) }}
           placeholder="Search company, phone, code…"
           className="h-8 px-3 text-sm border border-[#e0e2e6] rounded w-64 bg-white focus:outline-none focus:border-blue-400"
         />
@@ -90,6 +102,13 @@ export default function CustomerList() {
         )}
       </div>
 
+      {isError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-sm text-red-700 flex items-center justify-between">
+          <span>Failed to load customers: {error.message}</span>
+          <button onClick={() => refetch()} className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 font-medium">Retry</button>
+        </div>
+      )}
+
       {/* Table */}
       {isLoading ? (
         <p className="text-sm text-gray-400 py-4">Loading…</p>
@@ -98,6 +117,10 @@ export default function CustomerList() {
           <EmptyState message="No customers found" />
         </div>
       ) : (
+        <>
+        {isFetching && (
+          <p className="text-xs text-gray-400 mb-2">Refreshing…</p>
+        )}
         <div className="bg-white border border-[#e0e2e6] rounded-lg overflow-hidden">
           <table className="w-full text-sm">
             <thead>
@@ -133,6 +156,7 @@ export default function CustomerList() {
             <p className="text-xs text-gray-400">{customers.length} record{customers.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
+        </>
       )}
     </div>
   )

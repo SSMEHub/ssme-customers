@@ -131,6 +131,11 @@ function parseRow(row, rowIndex) {
   parsed.maker = row['Maker'] ?? row['maker'] ?? ''
   parsed.chassis_no = row['Chassis'] ?? row['chassis_no'] ?? ''
 
+  // Additional raw fields from Excel columns (SQL Accounting export convention)
+  parsed.raw_customer_code = row['Customer Code'] ?? row['customer_code'] ?? null
+  parsed.raw_phone = row['Phone'] ?? row['phone'] ?? null
+  parsed.raw_ssm_or_ic = row['SSM'] ?? row['id_number'] ?? null
+
   return {
     ...parsed,
     row_index: rowIndex,
@@ -191,23 +196,36 @@ export default function ImportPage() {
     if (!batchId || valid.length === 0) return
     setImporting(true)
     try {
-      // Insert staging rows
+      // Insert staging rows — map JS field names to DB column names
       await batchInsertStaging(
         valid.map((r) => ({
-          batch_id: r.batch_id,
-          row_index: r.row_index,
-          company_name: r.company_name,
-          plate_number: r.plate_number,
-          chassis_no: r.chassis_no,
-          maker: r.maker,
-          model_code: r.model_code,
-          body_type: r.body_type,
-          reg_date: r.reg_date ?? null,
-          delivery_date: r.delivery_date ?? null,
-          gvw_kg: r.gvw_kg ?? null,
-          manufacture_yr: r.manufacture_yr ?? null,
-          is_second_hand: r.is_second_hand ?? false,
-          raw_account_name: r.raw_account_name ?? '',
+          // Batch tracking
+          import_batch: batchId,
+          source_row: r.row_index,
+          source_file: fileName,
+          source_type: 'excel',
+
+          // Raw fields (import_staging uses raw_ prefix for unprocessed values)
+          raw_customer_name: r.raw_account_name ?? r.company_name ?? '',
+          raw_customer_code: r.raw_customer_code ?? null,
+          raw_phone: r.raw_phone ?? null,
+          raw_ssm_or_ic: r.raw_ssm_or_ic ?? null,
+          raw_plate: r.plate_number ?? null,
+          raw_chassis: r.chassis_no ?? null,
+          raw_maker: r.maker ?? null,
+          raw_model: r.model_code ?? null,
+          raw_body_type: r.body_type ?? null,
+          raw_reg_date: r.reg_date ?? null,
+          raw_manufacture_yr: r.manufacture_yr != null ? String(r.manufacture_yr) : null,
+          raw_gvw: r.gvw_kg != null ? String(r.gvw_kg) : null,
+
+          // Normalised fields (already cleaned by the parser)
+          normalized_plate: r.plate_number ?? null,
+          parsed_reg_date: r.reg_date ?? null,
+          parsed_gvw_kg: r.gvw_kg ?? null,
+          parsed_manufacture_yr: r.manufacture_yr ?? null,
+
+          // Validation result
           valid_status: 'valid',
         }))
       )
