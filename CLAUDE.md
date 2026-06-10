@@ -46,3 +46,7 @@ Every other hub module reads from this.
 - **Never commit to the Quotation App repo from this session** — separate GitHub accounts
 - **Never expose `customer_id` in URL params without auth check** — UUIDs but still sensitive
 - **Migration 010 renamed `customers.id` → `customers.customer_id`** — Quotation App must be updated before running migration 010 on shared production DB (see docs/adr/ADR-002)
+
+## Hard Rules
+
+- **Adversarial Verification Gate:** After EVERY batch of subagent work completes, BEFORE committing, dispatch independent verification agents. Each verifier reads actual source files at claimed line numbers, runs build+tests independently, and reports CONFIRMED/REFUTED per claim. No commit before verification complete. Agents lie in completion reports — trust nothing without independent verification.
