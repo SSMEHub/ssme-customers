@@ -103,10 +103,9 @@ export default function Dashboard() {
     staleTime: 10 * 60 * 1000,
   })
 
-  const { data: stats } = useQuery({
+  const { data: stats, isFetching: statsFetching } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: getQuickStats,
-    staleTime: 5 * 60 * 1000,
   })
 
   const groups = groupAlerts(alerts)
