@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getVehiclesWithNextExpiry } from '../../lib/db/vehicles'
+import { exportToExcel, dateSuffixFilename } from '../../lib/export'
 import StatusBadge from '../../components/ui/StatusBadge.jsx'
 import EmptyState from '../../components/ui/EmptyState.jsx'
 import PageHeader from '../../components/ui/PageHeader.jsx'
@@ -53,12 +54,44 @@ export default function VehicleList() {
       <PageHeader
         title="Vehicles"
         action={
-          <button
-            onClick={() => navigate('/vehicles/new')}
-            className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 font-medium"
-          >
-            + Add Vehicle
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                // Flatten nested customers object so xlsx receives plain strings
+                const rows = vehicles.map((v) => ({
+                  ...v,
+                  customer_name: v.customers?.company_name ?? '',
+                  reg_year: v.reg_date
+                    ? String(new Date(v.reg_date).getFullYear())
+                    : v.manufacture_yr != null ? String(v.manufacture_yr) : '',
+                }))
+                exportToExcel(
+                  rows,
+                  {
+                    plate_number: 'Plate No.',
+                    chassis_no: 'Chassis No.',
+                    maker: 'Maker',
+                    model_code: 'Model Code',
+                    customer_name: 'Owner',
+                    status: 'Status',
+                    reg_year: 'Reg Year',
+                    next_expiry: 'Next Expiry',
+                  },
+                  dateSuffixFilename('vehicles'),
+                )
+              }}
+              disabled={vehicles.length === 0}
+              className="px-3 py-1.5 bg-white border border-[#e0e2e6] text-gray-700 text-sm rounded hover:bg-[#f8fafc] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Export to Excel
+            </button>
+            <button
+              onClick={() => navigate('/vehicles/new')}
+              className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 font-medium"
+            >
+              + Add Vehicle
+            </button>
+          </div>
         }
       />
 

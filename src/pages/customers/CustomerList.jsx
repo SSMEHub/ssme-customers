@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getCustomersFiltered } from '../../lib/db/customers'
+import { exportToExcel, dateSuffixFilename } from '../../lib/export'
 import StatusBadge from '../../components/ui/StatusBadge.jsx'
 import EmptyState from '../../components/ui/EmptyState.jsx'
 import PageHeader from '../../components/ui/PageHeader.jsx'
@@ -53,12 +54,36 @@ export default function CustomerList() {
       <PageHeader
         title="Customers"
         action={
-          <button
-            onClick={() => navigate('/customers/new')}
-            className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 font-medium"
-          >
-            + Add Customer
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() =>
+                exportToExcel(
+                  customers,
+                  {
+                    customer_code: 'Code',
+                    company_name: 'Company Name',
+                    entity_type: 'Entity Type',
+                    id_number: 'ID Number',
+                    phone: 'Phone',
+                    city: 'City',
+                    state: 'State',
+                    status: 'Status',
+                  },
+                  dateSuffixFilename('customers'),
+                )
+              }
+              disabled={customers.length === 0}
+              className="px-3 py-1.5 bg-white border border-[#e0e2e6] text-gray-700 text-sm rounded hover:bg-[#f8fafc] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Export to Excel
+            </button>
+            <button
+              onClick={() => navigate('/customers/new')}
+              className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 font-medium"
+            >
+              + Add Customer
+            </button>
+          </div>
         }
       />
 
