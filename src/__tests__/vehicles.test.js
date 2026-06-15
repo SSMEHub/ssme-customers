@@ -1,14 +1,14 @@
 // @ts-check
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('../supabase', () => ({
+vi.mock('../lib/supabase', () => ({
   supabase: {
     from: vi.fn(),
   },
 }))
 
-import { supabase } from '../supabase'
-import { getVehicleByPlate, createVehicle, updateVehicleMileage } from '../db/vehicles'
+import { supabase } from '../lib/supabase'
+import { getVehicleByPlate, createVehicle, updateVehicleMileage } from '../lib/db/vehicles'
 
 beforeEach(() => { vi.clearAllMocks() })
 
@@ -44,12 +44,12 @@ describe('createVehicle', () => {
       select: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({ data: row, error: null }),
     })
-    const result = await createVehicle({ plate_number: 'wa1234x', customer_id: '00000000-0000-0000-0000-000000000001' })
+    const result = await createVehicle({ plate_number: 'wa1234x', customer_id: '11111111-1111-4111-8111-111111111111' })
     expect(result).toEqual(row)
   })
 
   it('throws ZodError when plate_number is missing', async () => {
-    await expect(createVehicle({ customer_id: '00000000-0000-0000-0000-000000000001' })).rejects.toThrow()
+    await expect(createVehicle({ customer_id: '11111111-1111-4111-8111-111111111111' })).rejects.toThrow()
   })
 
   it('throws ZodError when customer_id is not a UUID', async () => {
