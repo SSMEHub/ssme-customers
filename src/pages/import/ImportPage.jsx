@@ -26,7 +26,7 @@ function parseDate(raw) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return { date: s, error: null }
 
   // Malaysian DD/MM/YYYY variants
-  const dmyMatch = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/)
+  const dmyMatch = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/)
   if (dmyMatch) {
     const [, d, m, y] = dmyMatch
     const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`

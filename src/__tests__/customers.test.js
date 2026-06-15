@@ -1,28 +1,14 @@
 // @ts-check
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('../supabase', () => ({
+vi.mock('../lib/supabase', () => ({
   supabase: {
     from: vi.fn(),
   },
 }))
 
-import { supabase } from '../supabase'
-import { getCustomers, getCustomerById, createCustomer, updateCustomer } from '../db/customers'
-
-const mockChain = (resolveWith) => {
-  const chain = {
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    ilike: vi.fn().mockReturnThis(),
-    order: vi.fn().mockReturnThis(),
-    insert: vi.fn().mockReturnThis(),
-    update: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue(resolveWith),
-  }
-  chain.select.mockReturnValue({ ...chain, then: (resolve) => resolve(resolveWith) })
-  return chain
-}
+import { supabase } from '../lib/supabase'
+import { getCustomers, createCustomer, updateCustomer } from '../lib/db/customers'
 
 beforeEach(() => { vi.clearAllMocks() })
 
@@ -32,7 +18,8 @@ describe('getCustomers', () => {
     supabase.from.mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: rows, error: null }),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue({ data: rows, error: null }),
     })
     const result = await getCustomers()
     expect(result).toEqual(rows)
@@ -42,7 +29,8 @@ describe('getCustomers', () => {
     supabase.from.mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: null, error: { message: 'db error', code: '500' } }),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue({ data: null, error: { message: 'db error', code: '500' } }),
     })
     await expect(getCustomers()).rejects.toMatchObject({ message: 'db error' })
   })

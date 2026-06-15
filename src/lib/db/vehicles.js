@@ -51,7 +51,7 @@ export async function getVehicleByPlate(plateNumber) {
       .from('vehicles')
       .select(`
         *,
-        customers ( customer_id, company_name, phone, email ),
+        customers!vehicles_customer_id_fkey ( customer_id, company_name, phone, email ),
         vehicle_documents ( document_id, doc_type, doc_number, expiry_date, file_url )
       `)
       .eq('plate_number', plateNumber.toUpperCase())
@@ -149,7 +149,7 @@ export async function getVehicleById(vehicleId) {
     .from('vehicles')
     .select(`
       *,
-      customers ( customer_id, company_name, phone, email )
+      customers!vehicles_customer_id_fkey ( customer_id, company_name, phone, email )
     `)
     .eq('vehicle_id', vehicleId)
     .single()
@@ -190,7 +190,7 @@ export async function getVehiclesWithNextExpiry({ search = '', status = '', make
     .select(`
       vehicle_id, plate_number, maker, model_code, body_type,
       manufacture_yr, reg_date, status,
-      customers ( customer_id, company_name ),
+      customers!vehicles_customer_id_fkey ( customer_id, company_name ),
       vehicle_documents ( doc_type, expiry_date )
     `)
     .order('plate_number')
@@ -226,7 +226,7 @@ export async function searchVehicles(term) {
     .from('vehicles')
     .select(`
       vehicle_id, plate_number, maker, model_code, status,
-      customers ( company_name )
+      customers!vehicles_customer_id_fkey ( company_name )
     `)
     .or(`plate_number.ilike.%${term}%,chassis_no.ilike.%${term}%`)
     .limit(8)

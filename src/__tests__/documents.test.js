@@ -1,7 +1,7 @@
 // @ts-check
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('../supabase', () => ({
+vi.mock('../lib/supabase', () => ({
   supabase: {
     from: vi.fn(),
     storage: {
@@ -10,8 +10,8 @@ vi.mock('../supabase', () => ({
   },
 }))
 
-import { supabase } from '../supabase'
-import { uploadDocument, createDocument, getDocumentsByVehicle } from '../db/documents'
+import { supabase } from '../lib/supabase'
+import { uploadDocument, createDocument, getDocumentsByVehicle } from '../lib/db/documents'
 
 const makeFile = (name = 'test.pdf', type = 'application/pdf', size = 1024) =>
   ({ name, type, size })
