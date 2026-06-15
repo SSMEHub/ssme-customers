@@ -21,24 +21,33 @@ export default function GlobalSearch() {
   const navigate = useNavigate()
   const ref = useRef(null)
 
+  const termTooShort = !debouncedTerm || debouncedTerm.length < 2
+
   useEffect(() => {
-    if (!debouncedTerm || debouncedTerm.length < 2) {
-      setResults({ customers: [], vehicles: [] })
-      setOpen(false)
-      return
-    }
+    // This effect synchronizes search results with an external system (the
+    // search API). The "term too short" case is derived during render (see
+    // `termTooShort`), so it no longer setStates here. The one remaining
+    // synchronous setState is the pre-fetch loading flag, which is the
+    // documented data-fetching-in-effect pattern, not a cascading-render bug.
+    if (termTooShort) return
+    let cancelled = false
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- spinner must turn on synchronously when a debounced fetch starts
     setLoading(true)
     Promise.all([
       searchCustomers(debouncedTerm),
       searchVehicles(debouncedTerm),
     ])
       .then(([customers, vehicles]) => {
+        if (cancelled) return
         setResults({ customers, vehicles })
         setOpen(true)
       })
       .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [debouncedTerm])
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [debouncedTerm, termTooShort])
 
   useEffect(() => {
     function handleClick(e) {
@@ -69,7 +78,7 @@ export default function GlobalSearch() {
       {loading && (
         <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">…</span>
       )}
-      {open && (
+      {open && !termTooShort && (
         <div className="absolute top-full mt-1 left-0 right-0 bg-white border border-[#e0e2e6] rounded shadow-lg z-50 max-h-72 overflow-y-auto">
           {!hasResults && (
             <p className="text-xs text-gray-400 px-3 py-2">No results found</p>

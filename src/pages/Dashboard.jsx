@@ -103,7 +103,7 @@ export default function Dashboard() {
     staleTime: 10 * 60 * 1000,
   })
 
-  const { data: stats, isFetching: statsFetching } = useQuery({
+  const { data: stats } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: getQuickStats,
   })

@@ -26,14 +26,18 @@ export default function App() {
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session))
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
+    // Resolve loading inside the async callbacks (React-recommended) rather than
+    // via a separate setState-in-effect that mirrors `session`.
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+      setLoading(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s)
+      setLoading(false)
+    })
     return () => subscription.unsubscribe()
   }, [])
-
-  useEffect(() => {
-    if (session !== undefined) setLoading(false)
-  }, [session])
 
   // Handle returnTo redirect when authenticated (session auto-restore case)
   useEffect(() => {
