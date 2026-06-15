@@ -1,37 +1,31 @@
 # NEXT SESSION
-Updated: 2026-06-10 (end of session)
+Updated: 2026-06-15 (end of session)
 
 ## Where we are
-Module 1 (Customer & Fleet DB) is ~80% built and deployed. This session: stood up cross-AI tooling (`/council`), did a strategic review + foundation build for Module 1, and built a Claude→DeepSeek failover for the 5-hour subscription limit.
+Module 1 (Customer & Fleet DB) foundation is **verified, merged to `main`, and pushed to SSMEHub**.
+This session took `feat/m1-foundation` from "committed but unverified" → green and integrated.
 
 ## This session — DONE
-- **/council installed for ALL truck projects** (`~/.claude-trucks/skills/council/`), powered by your OpenRouter key in `~/.llm-keys-trucks` (chmod 600). Default panel `gpt,deepseek,kimi` (~2¢/round). NOTE: OpenRouter `/credits` API falsely reports `$0` — the paid seats actually work (proven live).
-- **Council strategic review of Module 1** — 5 goals + gap analysis + architecture. Verdict 4×REVISE / 1×RECONSIDER. Findings (verified against the real schema):
-  - No `api` contract layer → other modules read raw `public` tables → that's the ADR-002 breakage source.
-  - No unique constraint on customer SSM/IC (`id_number`) → duplicates likely among the 2,510.
-  - **Quotation App + Module 1 SHARE the `customers` table** (confirmed in `010_module1_full_schema.sql`) → "a new sale auto-adds the customer" is already true; everything links by `customer_id`.
-- **Foundation build — branch `feat/m1-foundation`, UNCOMMITTED + UNVERIFIED** (4 parallel agents wrote these):
-  - `supabase/migrations/013_api_contract_schema.sql` — `api.customers/vehicles/vehicle_documents/expiry_alerts` views (`security_invoker`), SELECT-only for downstream modules.
-  - `supabase/migrations/014_customer_dedup_guard.sql` — `customer_dup_candidates` view (DETECTION ONLY, no auto-merge) + commented-out forward unique index.
-  - `supabase/migrations/015_audit_trail.sql` — `audit_log` + triggers on customers/vehicles/vehicle_documents/ownership_transfers.
-  - `src/lib/export.js` + Export-to-Excel buttons on `CustomerList.jsx` + `VehicleList.jsx`.
-  - `docs/adr/ADR-003-api-contract-layer.md`, `scripts/dedup-report.sql`.
-- **Claude↔DeepSeek failover** (the 5h-limit fix) — `ds`/`opus` aliases in `~/.zshrc` (backed up). BOTH paths CLI-verified (`DS_PATH_OK` / `OPUS_PATH_OK`).
-  - `ds` → continue this chat on `deepseek-v4-pro`; `opus` → continue on Opus (Pro subscription). Type `ds` at the limit, `opus` after reset.
-  - The trucks `sk-ant-` API key is OUT OF CREDIT — `opus` unsets it so Claude Code uses the Keychain Pro subscription.
-- Installed LM Studio + Cherry Studio (exploring local/GUI model tools).
+- **Adversarial verification of the foundation build** (migrations 013–015 + `export.js` + list buttons) — all claims CONFIRMED clean (security_invoker views, detection-only dedup, audit triggers, idempotent).
+- **Repaired the test suite** — it was 0-runnable (test files imported `../supabase` but the client is at `src/lib/supabase.js`). Fixed import paths + a mock chain + an invalid UUID fixture → **20/20 passing**. No assertions weakened.
+- **Cleared 9 ESLint errors** — `Dashboard.jsx` (unused var), `ImportPage.jsx` (regex escapes), `App.jsx` (auth loading moved into async callbacks instead of mirror setState-in-effect), `GlobalSearch.jsx` (derive term-too-short at render + cancel flag for stale results; one line-scoped disable w/ justification). **Lint 0 errors.**
+- **Fixed 3 REAL source bugs in `src/lib/db/documents.js`** that the tests caught: `createDocument`/`uploadDocument` did no validation. Added a Zod `doc_type` enum (matches CLAUDE.md domain rules), a file-type allowlist, and a 10 MB size cap — checked **before** touching storage.
+- **3 atomic commits → merged `feat/m1-foundation` → `main`** (`--no-ff`, merge `32653a4`, 10 commits) → **re-verified green on main** (20/20 tests, build OK) → **pushed to `origin/main`** (SSMEHub).
+- **Caught + fixed a gh account flip** — active account was `GeneralMax618` (casino); switched to `JasonSSKB` before pushing. Commits were already JasonSSKB-attributed.
+- **Pricing review (OpenRouter Fusion):** `openrouter/fusion` is **variable-priced** (a panel-of-models router, 128K ctx, `supported_parameters: []` so no tool-calling) — a poor fit as a coding failover. **DeepSeek V4 Pro** ($0.43/$0.87 per 1M, 1M ctx, tool support) stays the recommended failover, ~23× cheaper than Opus 4.8 ($5/$25 per 1M on OpenRouter).
 
 ## PENDING — next session
-1. **Verify + commit the foundation build** (`feat/m1-foundation`): adversarial verification of 013–015 + export (read each file, check SQL, run `npm run build`), THEN atomic commits. Nothing committed yet.
-2. **Apply migrations to the shared `ssme-hub` DB — ONLY with a backup + Quotation-App coordination.** They're additive/non-breaking, but it's the shared prod DB (ADR-002 warns).
-3. **Dedup:** run `scripts/dedup-report.sql` → review `customer_dup_candidates` → human-approved merge → then enable the forward unique index.
-4. **Vehicle backfill** — still BLOCKED on Jason's vehicle Excel (fleet is only 3 rows).
+1. **Apply migrations 013–015 to the shared `ssme-hub` DB — ONLY with a backup + Quotation-App coordination.** Additive/non-breaking, but it's the shared prod DB (ADR-002). Migration files are committed but NOT applied — nothing touched the DB this session.
+2. **Dedup:** run `scripts/dedup-report.sql` → review `customer_dup_candidates` → human-approved merge (NEVER delete customers) → then enable the forward unique index (currently commented out in 014).
+3. **Vehicle backfill** — still BLOCKED on Jason's vehicle Excel (fleet is only 3 rows).
+4. **Accounting software API integration — DEFERRED to a future session (Jason's call).** Blockers to resolve first: WHICH software (SQL Account / AutoCount / QuickBooks / Xero — note SQL Account & AutoCount are often desktop with no cloud API); cloud-vs-desktop + API/SDK access + credentials; what data to pull (customers / AR aging / invoices / payments). Scope check: Module 1 is the data vault, and financial/GP data is **admin+finance only** — must gate at the source. ⚠️ `src/lib/export.js` has NO internal role guard, so any financial column passed to it would be emitted ungated — fix when accounting data lands.
 5. **Confirm `opus` across a real limit→reset cycle** in daily use.
-6. Fold in the council's failover-reliability findings (council was running at session end → `/tmp/council-failover-out/`).
+6. Fold in the council's failover-reliability findings (`/tmp/council-failover-out/`).
 
 ## Key info
 - Deployed: `https://ssme-customers.soonsengmotorsenterprise.workers.dev`
 - Supabase: `gruvcmbsvoauhftfcoio.supabase.co` (ssme-hub) — SHARED with the Quotation App
 - Login: `jason@ssmehub.com` / `Ssme2025!`
-- Branch: `feat/m1-foundation` (off `main`; also carries 4 prior-session uncommitted fixes — commit those separately from the 013–015 work)
-- Failover: type `ds` (→ DeepSeek) at the limit, `opus` (→ Opus subscription) on reset
+- Repo: `github.com/SSMEHub/ssme-customers` — `main` is current (foundation merged + pushed). `feat/m1-foundation` still exists.
+- **gh account: keep `JasonSSKB` active for truck work** (it had flipped to GeneralMax618). Verify with `gh auth status` before any push.
+- Failover: type `ds` (→ DeepSeek V4 Pro) at the limit, `opus` (→ Opus subscription) on reset. The trucks `sk-ant-` API key is OUT OF CREDIT.
